@@ -14,7 +14,7 @@ export_presets.cfg
 data_*/
 mono_crash.*.json
 
-skins/
+skins/*
 !skins/README.txt
-songs/
+songs/*
 !songs/README.txt

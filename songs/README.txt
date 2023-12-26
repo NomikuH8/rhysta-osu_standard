@@ -1,0 +1,1 @@
+Put your osu songs here (osz, zipped or unzipped)

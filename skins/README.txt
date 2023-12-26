@@ -1,0 +1,1 @@
+Put your osu skins here (osk or unzipped)
