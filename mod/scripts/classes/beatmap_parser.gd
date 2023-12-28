@@ -104,6 +104,7 @@ static func parse_hit_object(variable: String) -> Dictionary:
 	var structured: Dictionary = {}
 	if [0, 2, 4, 5, 6].has(type) and split.size() == 7:
 		structured = {
+			"inputType": "circle",
 			"x": int(split[0]),
 			"y": int(split[1]),
 			"time": int(split[2]),
@@ -129,6 +130,7 @@ static func parse_hit_object(variable: String) -> Dictionary:
 			})
 		
 		structured = {
+			"inputType": "slider",
 			"x": int(split[0]),
 			"y": int(split[1]),
 			"time": int(split[2]),
@@ -145,6 +147,7 @@ static func parse_hit_object(variable: String) -> Dictionary:
 	
 	if [3].has(type) and split.size() == 7:
 		structured = {
+			"inputType": "spinner",
 			"x": split[0],
 			"y": split[1],
 			"time": split[2],
