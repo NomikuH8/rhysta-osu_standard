@@ -1,8 +1,10 @@
 extends Control
 
 
-var infos: ConfigFile
+var infos: Dictionary = {}
 
 
 func _ready():
-	%SongTitleLabel.text = infos.get_value("Metadata", "TitleUnicode", "Song title")
+	print(infos)
+	%SongTitleLabel.text = infos["Metadata"]["TitleUnicode"]
+	%DiffNameLabel.text = infos["Metadata"]["Version"]

@@ -11,7 +11,11 @@ func _ready():
 
 func spawn_songs():
 	var mod = ModManager.loaded_mods.filter(func(m): return m["file_name"] == "osu_standard")[0]
-	var mod_song_path = "res://modules/" + mod["file_name"] + "/songs"
+	var mod_path = "res://modules/" + mod["file_name"]
+	var mod_song_path = mod_path + "/songs"
+	
+	var _BeatmapParserScript = load(mod_path + "/mod/scripts/classes/beatmap_parser.gd")
+	
 	var dir = DirAccess.open(mod_song_path)
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
@@ -29,20 +33,13 @@ func spawn_songs():
 				continue
 			
 			if new_file_name.ends_with(".osu"):
-				var diff = diff_scene.instantiate()
-				var config_file = ConfigFile.new()
 				var path = mod_song_path + "/" + file_name + "/" + new_file_name
 				var globalized_path = ProjectSettings.globalize_path(path)
 				var file_access = FileAccess.open(globalized_path, FileAccess.READ)
 				var text = file_access.get_as_text()
-				var err = config_file.parse(text.erase(0, 20))
-				if err != OK:
-					print(err)
-					new_file_name = new_dir.get_next()
-					continue
 				
-				print(config_file.get_sections())
-				diff.infos = config_file
+				var diff = diff_scene.instantiate()
+				diff.infos = BeatmapParser.parse(text)
 				%SongsContainer.add_child(diff)
 			
 			new_file_name = new_dir.get_next()
