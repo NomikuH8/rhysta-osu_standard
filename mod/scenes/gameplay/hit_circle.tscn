@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bky8t5h4sb5bh"]
+
+[ext_resource type="Script" path="res://modules/osu_standard/mod/scripts/gameplay/hit_circle.gd" id="1_byvti"]
+
+[node name="HitCircle" type="Node2D"]
+script = ExtResource("1_byvti")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
