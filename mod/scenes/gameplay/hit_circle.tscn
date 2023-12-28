@@ -5,4 +5,10 @@
 [node name="HitCircle" type="Node2D"]
 script = ExtResource("1_byvti")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Colored" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Colored"]
+
+[node name="Overlay" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Overlay"]

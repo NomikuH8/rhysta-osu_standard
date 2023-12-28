@@ -40,6 +40,7 @@ func spawn_songs():
 				
 				var diff = diff_scene.instantiate()
 				diff.infos = BeatmapParser.parse(text)
+				diff.path = mod_song_path + "/" + file_name
 				%SongsContainer.add_child(diff)
 			
 			new_file_name = new_dir.get_next()

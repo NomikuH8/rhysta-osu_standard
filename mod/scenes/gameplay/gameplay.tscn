@@ -5,6 +5,9 @@
 [node name="Gameplay" type="Node"]
 script = ExtResource("1_3l1hd")
 
+[node name="Player" type="AudioStreamPlayer" parent="."]
+volume_db = -20.083
+
 [node name="Game" type="Node2D" parent="."]
 
 [node name="HUD" type="Control" parent="."]
