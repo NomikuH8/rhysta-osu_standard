@@ -1,22 +1,20 @@
 class_name BeatmapParser
 extends Node
 
-# See https://osu.ppy.sh/wiki/en/Client/File_formats/osu_%28file_format%29
+
 static func parse(beatmap_text: String) -> Dictionary:
 	var beatmap_parsed: Dictionary = {}
 	var sections = beatmap_text.split("\r\n\r\n")
 	for section in sections:
-		var full_variables = section.split("\r\n")
+		var lines = section.split("\r\n")
 		var current_ini_section: String = ""
-		for full_variable in full_variables:
-			if full_variable.is_empty():
-				continue 
-			
-			if full_variable.begins_with("//") or full_variable.begins_with("osu file format"):
+		
+		for line in lines:
+			if line.is_empty() or line.begins_with("//") or line.begins_with("osu file format"):
 				continue
 			
-			if full_variable.begins_with("[") and full_variable.ends_with("]"):
-				current_ini_section = full_variable.replace("[", "").replace("]", "")
+			if line.begins_with("[") and line.ends_with("]"):
+				current_ini_section = line.strip_edges().trim_prefix("[").trim_suffix("]")
 				if ["Events", "TimingPoints", "HitObjects"].has(current_ini_section):
 					beatmap_parsed[current_ini_section] = []
 				else:
@@ -24,137 +22,134 @@ static func parse(beatmap_text: String) -> Dictionary:
 				continue
 			
 			if current_ini_section == "Events":
-				var structured = BeatmapParser.parse_event(full_variable)
-				beatmap_parsed[current_ini_section].push_back(structured)
+				beatmap_parsed[current_ini_section].append(parse_event(line))
 				continue
 			
 			if current_ini_section == "TimingPoints":
-				var structured = BeatmapParser.parse_timing_point(full_variable)
-				beatmap_parsed[current_ini_section].push_back(structured)
+				beatmap_parsed[current_ini_section].append(parse_timing_point(line))
 				continue
 			
 			if current_ini_section == "HitObjects":
-				var structured = BeatmapParser.parse_hit_object(full_variable)
-				beatmap_parsed[current_ini_section].push_back(structured)
+				beatmap_parsed[current_ini_section].append(parse_hit_object(line))
 				continue
 			
-			var splitted_variable = full_variable.split(":", true, 1)
-			if splitted_variable.size() <= 1:
-				continue
-			
-			var key = splitted_variable[0].strip_edges()
-			var value = splitted_variable[1].strip_edges()
-			beatmap_parsed[current_ini_section][key] = value
+			var key_value = line.split(":", true, 1)
+			if key_value.size() == 2:
+				beatmap_parsed[current_ini_section][key_value[0].strip_edges()] = key_value[1].strip_edges()
 	
 	return beatmap_parsed
 
 
-static func parse_event(variable: String) -> Dictionary:
-	var split = variable.split(",")
-	var type = int(split[0])
-	var structured: Dictionary = {}
+# Events, like background, video, breaks, etc.
+static func parse_event(line: String) -> Dictionary:
+	var parts = line.split(",")
+	if parts.size() == 0:
+		return {}
 	
-	if type == 0:
-		structured = {
-			"type": int(split[0]),
-			"startTime": int(split[1]),
-			"filename": split[2],
-			"xOffset": int(split[3]),
-			"yOffset": int(split[4])
-		}
+	var type = int(parts[0])
+	var structured = {"type": type}
 	
-	if type == 1:
-		structured = {
-			"type": int(split[0]),
-			"startTime": int(split[1]),
-			"filename": split[2],
-			"xOffset": int(split[3]),
-			"yOffset": int(split[4])
-		}
-	
-	if type == 2:
-		structured = {
-			"type": int(split[0]),
-			"startTime": int(split[1]),
-			"endTime": int(split[2])
-		}
-	
+	match type:
+		0, 1:
+			if parts.size() >= 5:
+				structured["startTime"] = int(parts[1])
+				structured["filename"] = parts[2]
+				structured["xOffset"] = int(parts[3])
+				structured["yOffset"] = int(parts[4])
+		2:
+			if parts.size() >= 3:
+				structured["startTime"] = int(parts[1])
+				structured["endTime"] = int(parts[2])
+
 	return structured
 
 
-static func parse_timing_point(variable: String) -> Dictionary:
-	var split = variable.split(",")
-	var structured = {
-		"time": int(split[0]),
-		"beatLength": int(split[1]),
-		"meter": int(split[2]),
-		"sampleSet": int(split[3]),
-		"sampleIndex": int(split[4]),
-		"volume": int(split[5]),
-		"uninherited": int(split[6]),
-		"effects": int(split[7])
+# Timing points (BPM, speed, inheritance)
+static func parse_timing_point(line: String) -> Dictionary:
+	var parts = line.split(",")
+	if parts.size() < 8:
+		return {}
+	
+	return {
+		"time": int(parts[0]),
+		"beatLength": float(parts[1]),
+		"meter": int(parts[2]),
+		"sampleSet": int(parts[3]),
+		"sampleIndex": int(parts[4]),
+		"volume": int(parts[5]),
+		"uninherited": int(parts[6]),
+		"effects": int(parts[7])
+	}
+
+
+# HitObjects
+static func parse_hit_object(line: String) -> Dictionary:
+	var split = line.split(",")
+	if split.size() < 5:
+		return {}
+
+	var x = int(split[0])
+	var y = int(split[1])
+	var time = int(split[2])
+	var type = int(split[3])
+	var hitSound = int(split[4])
+	
+	var base = {
+		"x": x,
+		"y": y,
+		"time": time,
+		"type": type,
+		"hitSound": hitSound,
 	}
 	
-	return structured
-
-
-static func parse_hit_object(variable: String) -> Dictionary:
-	var split = variable.split(",")
-	var type = int(split[3])
-	var structured: Dictionary = {}
-	if [0, 2, 4, 5, 6].has(type) and split.size() == 7:
-		structured = {
-			"inputType": "circle",
-			"x": int(split[0]),
-			"y": int(split[1]),
-			"time": int(split[2]),
-			"type": int(split[3]),
-			"hitSound": int(split[4]),
-			"objectParams": split[5],
-			"hitSample": split[6]
-		}
+	# Hit ciecle
+	if (type & 1) != 0:
+		base["inputType"] = "circle"
+		if split.size() >= 7:
+			base["objectParams"] = split[5]
+			base["hitSample"] = split[6]
 	
-	if [1, 2, 4, 5, 6].has(type) and split.size() > 10:
-		var edge_sounds_string = split[8].split("|")
-		var edge_sounds = []
-		for edge_sound in edge_sounds_string:
-			edge_sounds.push_back(int(edge_sound))
+	# Slider
+	elif (type & 2) != 0:
+		base["inputType"] = "slider"
+		if split.size() >= 8:
+			var curve_data = split[5].split("|")
+			var curve_type = curve_data[0]
+			var curve_points = []
+			for point in curve_data.slice(1):
+				var coords = point.split(":")
+				if coords.size() == 2:
+					curve_points.append({ "x": int(coords[0]), "y": int(coords[1]) })
+			
+			base["curveType"] = curve_type
+			base["curvePoints"] = curve_points
+			base["slides"] = int(split[6])
+			base["length"] = float(split[7])
 		
-		var curve_points_string = split[5].split("|").slice(1)
-		var curve_points = []
-		for curve_point in curve_points_string:
-			var curve_split = curve_point.split(":")
-			curve_points.push_back({
-				"x": curve_split[0],
-				"y": curve_split[1]
-			})
+		if split.size() >= 9:
+			base["edgeSounds"] = []
+			for e in split[8].split("|"):
+				base["edgeSounds"].push_back(int(e))
 		
-		structured = {
-			"inputType": "slider",
-			"x": int(split[0]),
-			"y": int(split[1]),
-			"time": int(split[2]),
-			"type": int(split[3]),
-			"hitSound": int(split[4]),
-			"curveType": split[5].split("|")[0],
-			"curvePoints": curve_points,
-			"slides": split[6],
-			"length": split[7],
-			"edgeSounds": edge_sounds,
-			"edgeSets": split[9].split("|"),
-			"hitSample": split[10]
-		}
+		if split.size() >= 10:
+			base["edgeSets"] = split[9].split("|")
+		
+		if split.size() >= 11:
+			base["hitSample"] = split[10]
 	
-	if [3].has(type) and split.size() == 7:
-		structured = {
-			"inputType": "spinner",
-			"x": split[0],
-			"y": split[1],
-			"time": split[2],
-			"type": split[3],
-			"hitSound": split[4],
-			"endTime": split[5],
-			"hitSample": split[6]
-		}
+	# Spinner
+	elif (type & 8) != 0:
+		base["inputType"] = "spinner"
+		if split.size() >= 7:
+			base["endTime"] = int(split[5])
+			base["hitSample"] = split[6]
 	
-	return structured
+	# Hold (mania)
+	elif (type & 128) != 0:
+		base["inputType"] = "hold"
+		if split.size() >= 6:
+			var hold_data = split[5].split(":")
+			if hold_data.size() >= 1:
+				base["endTime"] = int(hold_data[0])
+	
+	return base

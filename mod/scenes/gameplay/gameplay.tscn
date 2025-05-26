@@ -1,12 +1,12 @@
 [gd_scene load_steps=2 format=3 uid="uid://dcakbwg8ohscq"]
 
-[ext_resource type="Script" path="res://modules/osu_standard/mod/scripts/gameplay/gameplay.gd" id="1_3l1hd"]
+[ext_resource type="Script" uid="uid://dmfs225c8vsqk" path="res://modules/osu_standard/mod/scripts/gameplay/gameplay.gd" id="1_3l1hd"]
 
 [node name="Gameplay" type="Node"]
 script = ExtResource("1_3l1hd")
 
 [node name="Player" type="AudioStreamPlayer" parent="."]
-volume_db = -20.083
+volume_db = -10.838
 
 [node name="Game" type="Node2D" parent="."]
 

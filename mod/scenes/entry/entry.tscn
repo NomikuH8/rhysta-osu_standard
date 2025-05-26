@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://c2vdi6qrdopn7"]
 
-[ext_resource type="Script" path="res://modules/osu_standard/mod/scripts/entry/entry.gd" id="1_8ap0q"]
+[ext_resource type="Script" uid="uid://dybx64xo6dwmi" path="res://modules/osu_standard/mod/scripts/entry/entry.gd" id="1_8ap0q"]
 [ext_resource type="PackedScene" uid="uid://f3t418hb5mfk" path="res://scenes/menus/options_menu.tscn" id="1_vaafd"]
 [ext_resource type="PackedScene" uid="uid://b7f80k5i7w6e" path="res://scenes/menus/entry_menu.tscn" id="2_abau8"]
 [ext_resource type="PackedScene" uid="uid://c4yly0mwtwapj" path="res://modules/osu_standard/mod/scenes/entry/diff.tscn" id="3_fkdc4"]

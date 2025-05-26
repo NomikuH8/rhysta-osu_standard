@@ -14,7 +14,7 @@ func spawn_songs():
 	var mod_path = "res://modules/" + mod["file_name"]
 	var mod_song_path = mod_path + "/songs"
 	
-	var _BeatmapParserScript = load(mod_path + "/mod/scripts/classes/beatmap_parser.gd")
+	load(mod_path + "/mod/scripts/classes/beatmap_parser.gd")
 	
 	var dir = DirAccess.open(mod_song_path)
 	dir.list_dir_begin()

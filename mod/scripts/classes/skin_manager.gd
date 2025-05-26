@@ -3,6 +3,10 @@ extends Node
 
 static func get_from_path(path: String) -> Dictionary:
 	var dir = DirAccess.open(path)
+	if dir == null:
+		push_error(DirAccess.get_open_error())
+		return {}
+	
 	dir.list_dir_begin()
 	
 	var filename = dir.get_next()

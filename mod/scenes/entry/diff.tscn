@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c4yly0mwtwapj"]
 
-[ext_resource type="Script" path="res://modules/osu_standard/mod/scripts/entry/diff.gd" id="1_jw7mj"]
+[ext_resource type="Script" uid="uid://coidgeemg6k0n" path="res://modules/osu_standard/mod/scripts/entry/diff.gd" id="1_jw7mj"]
 
 [node name="MarginContainer" type="MarginContainer"]
 custom_minimum_size = Vector2(0, 96)
