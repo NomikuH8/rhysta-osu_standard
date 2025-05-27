@@ -1,6 +1,7 @@
 extends Node
 
 
+@onready var game: Node2D = $Game
 @onready var player: AudioStreamPlayer = $Player
 @onready var hit_circle_scene = preload("res://modules/osu_standard/mod/scenes/gameplay/hit_circle.tscn")
 #@onready var slider_scene = preload("res://Slider.tscn")
@@ -11,49 +12,57 @@ var diff: Dictionary = {}
 var path: String = ""
 var time_begin: float
 var time_delay: float
-var current_hit_object: Dictionary = {}
+var current_object_index := 0
+
+
+const PRELOAD_TIME_MS := 1000
 
 
 func _ready():
-	spawn_hit_objects(diff["HitObjects"])
 	import_audio()
 	time_begin = Time.get_ticks_usec()
 	time_delay = AudioServer.get_time_to_next_mix() + AudioServer.get_output_latency()
+	
 	player.play()
 
 
-func spawn_hit_objects(objects: Array):
-	for obj in objects:
-		match obj.get("inputType", ""):
-			"circle":
-				var circle = hit_circle_scene.instantiate()
-				circle.position = Vector2(obj["x"], obj["y"])
-				circle.name = "Circle_%s" % obj["time"]
-				add_child(circle)
-			
-			"slider":
-				var slider = hit_circle_scene.instantiate()
-				slider.position = Vector2(obj["x"], obj["y"])
-				slider.name = "Slider_%s" % obj["time"]
-				add_child(slider)
-			
-			"spinner":
-				var spinner = hit_circle_scene.instantiate()
-				spinner.name = "Spinner_%s" % obj["time"]
-				add_child(spinner)
+func spawn_hit_object(obj: Dictionary):
+	match obj.get("inputType", ""):
+		"circle":
+			var circle = hit_circle_scene.instantiate()
+			circle.hit_time = obj["time"]
+			circle.position = Vector2(obj["x"], obj["y"])
+			circle.name = "Circle_%s" % obj["time"]
+			game.add_child(circle)
+		
+		"slider":
+			var slider = hit_circle_scene.instantiate()
+			slider.position = Vector2(obj["x"], obj["y"])
+			slider.name = "Slider_%s" % obj["time"]
+			game.add_child(slider)
+		
+		"spinner":
+			var spinner = hit_circle_scene.instantiate()
+			spinner.name = "Spinner_%s" % obj["time"]
+			game.add_child(spinner)
 
 
 func _process(_delta: float):
-	var time = (Time.get_ticks_usec() - time_begin) / 1000000.0
-	time -= time_delay
-	time = max(0, time)
-	var time_millis = round(time * 1000)
+	if current_object_index >= diff["HitObjects"].size():
+		return
 	
-	if not current_hit_object.has("time"):
-		current_hit_object["time"] = 0
+	var current_time = (Time.get_ticks_usec() - time_begin) / 1000000.0
+	current_time -= time_delay
+	current_time = max(0, current_time)
+	var current_time_ms = round(current_time * 1000)
 	
-	if time_millis >= current_hit_object["time"]:
-		current_hit_object = diff["HitObjects"][diff["HitObjects"].find(current_hit_object) + 1]
+	while current_object_index < diff["HitObjects"].size():
+		var obj = diff["HitObjects"][current_object_index]
+		if obj["time"] <= current_time_ms + PRELOAD_TIME_MS:
+			spawn_hit_object(obj)
+			current_object_index += 1
+		else:
+			break
 
 
 func import_audio():
@@ -70,4 +79,27 @@ func import_audio():
 	if audio_filename.ends_with("ogg"):
 		audio_stream = AudioStreamOggVorbis.load_from_file(audio_path)
 	
-	player.stream = audio_stream
+	if audio_stream:
+		player.stream = audio_stream
+	else:
+		push_error("failed to load audio: %s" % audio_path)
+
+
+func _input(event: InputEvent):
+	if (
+		event is InputEventMouseButton and
+		event.pressed and
+		event.button_index == MOUSE_BUTTON_LEFT
+	) or (
+		event is InputEventKey and
+		event.is_pressed() and
+		(
+			event.as_text() == "j" or
+			event.as_text() == "l"
+		)
+	):
+		for child in game.get_children():
+			if child is Area2D and child.has_method("try_hit"):
+				var result = child.try_hit()
+				if result != "":
+					print("Acerto:", result)

@@ -13,9 +13,15 @@ static func get_from_path(path: String) -> Dictionary:
 	var skin: Dictionary = {}
 	while filename != "":
 		if filename.ends_with(".png"):
-			var image = Image.load_from_file(path + "/" + filename)
-			var texture = ImageTexture.create_from_image(image)
-			skin[filename] = texture
+			var full_path: String = path + "/" + filename
+			var image := Image.new()
+			var err := image.load(full_path)
+			
+			if err == OK:
+				var texture = ImageTexture.create_from_image(image)
+				skin[filename] = texture
+			else:
+				push_error("error to load image: " + full_path + " (code: %s)" % err)
 		
 		filename = dir.get_next()
 	
