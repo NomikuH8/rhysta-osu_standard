@@ -29,19 +29,40 @@ func _ready():
 func _process(_delta):
 	var time = get_game_time_ms()
 	var time_diff = time - hit_time
-
+	
 	if not was_hit and time_diff > hit_window:
+		print("miss")
 		result = "miss"
 		queue_free()
+		return
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (
+		event is InputEventMouseButton and
+		event.pressed and
+		event.button_index == MOUSE_BUTTON_LEFT
+	) or (
+		event is InputEventKey and
+		event.is_pressed() and
+		(
+			event.as_text() == "j" or
+			event.as_text() == "l"
+		)
+	):
+		var mouse_pos = get_global_mouse_position()
+		var circle_radius = hit_circle.texture.get_width() * 0.5 * hit_circle.scale.x
+		if position.distance_to(mouse_pos) <= circle_radius:
+			try_hit()
 
 
 func try_hit() -> String:
 	var time = get_game_time_ms()
 	var time_diff = abs(time - hit_time)
-
+	
 	if was_hit:
 		return ""
-
+	
 	if time_diff <= 30:
 		result = "perfect"
 	elif time_diff <= 80:
@@ -50,7 +71,8 @@ func try_hit() -> String:
 		result = "bad"
 	else:
 		result = "miss"
-
+	print(result)
+	
 	if result != "miss":
 		was_hit = true
 		queue_free()

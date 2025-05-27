@@ -85,21 +85,21 @@ func import_audio():
 		push_error("failed to load audio: %s" % audio_path)
 
 
-func _input(event: InputEvent):
-	if (
-		event is InputEventMouseButton and
-		event.pressed and
-		event.button_index == MOUSE_BUTTON_LEFT
-	) or (
-		event is InputEventKey and
-		event.is_pressed() and
-		(
-			event.as_text() == "j" or
-			event.as_text() == "l"
-		)
-	):
-		for child in game.get_children():
-			if child is Area2D and child.has_method("try_hit"):
-				var result = child.try_hit()
-				if result != "":
-					print("Acerto:", result)
+#func _input(event: InputEvent):
+	#if (
+		#event is InputEventMouseButton and
+		#event.pressed and
+		#event.button_index == MOUSE_BUTTON_LEFT
+	#) or (
+		#event is InputEventKey and
+		#event.is_pressed() and
+		#(
+			#event.as_text() == "j" or
+			#event.as_text() == "l"
+		#)
+	#):
+		#for child in game.get_children():
+			#if child is Area2D and child.has_method("try_hit"):
+				#var result = child.try_hit()
+				#if result != "":
+					#print("Acerto:", result)
